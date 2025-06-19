@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rezepte</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Fish+Crispy&family=Bodoni+Moda&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background-color: #f9f9f9;
+        }
+        
+        h1 {
+            color: #333;
+            font-family: 'Fish Crispy', cursive;
+        }
+        
+        form {
+            margin-bottom: 2rem;
+            background: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 0 5px #ccc;
+            max-width: 400px;
+        }
+        
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.3rem;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        #recipe-list {
+            max-width: 600px;
+        }
+        
+        .recipe {
+            background: #fff;
+            padding: 1rem;
+            margin: 2rem 0 1rem 0;
+            border-radius: 5px;
+            box-shadow: 0 0 5px #ccc;
+        }
+        
+        .recipe h3 {
+            margin-top: 0;
+            font-family: 'Arial Black', Arial, sans-serif;
+        }
+        
+        .recipe p strong {
+            display: block;
+            margin-top: 1rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .recipe p pre {
+            white-space: pre-wrap;
+            font-family: inherit;
+            margin: 0;
+            padding-left: 1rem;
+            font-family: monospace;
+        }
+        
+        .recipe p pre span.qty {
+            display: inline-block;
+            width: 4ch;
+            color: #555;
+        }
+        
+        .recipe p pre span.ingredient {
+            color: #4CAF50;
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Rezepte</h1>
+    <div>
+        <a href="add-recipe.html" style="display:inline-block; margin-bottom:1rem; font-weight:bold;">Neues Rezept hinzufügen</a>
+    </div>
+    <div id="recipe-previews"></div>
+    <script>
+        const recipePreviews = document.getElementById('recipe-previews');
+
+        // Load saved recipes from localStorage
+        let recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+
+        function openFullRecipe(recipe) {
+            // Navigate to recipe.html with title as URL parameter
+            window.location.href = `recipe.html?title=${encodeURIComponent(recipe.title)}`;
+        }
+
+        recipes.forEach((recipe, index) => {
+            const previewDiv = document.createElement('div');
+            previewDiv.classList.add('recipe-preview');
+            previewDiv.style.cursor = 'pointer';
+            previewDiv.style.display = 'inline-block';
+            previewDiv.style.margin = '10px';
+            previewDiv.style.border = '1px solid #ccc';
+            previewDiv.style.borderRadius = '5px';
+            previewDiv.style.width = '150px';
+            previewDiv.style.textAlign = 'center';
+            previewDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+            previewDiv.style.boxShadow = '0 0 5px #ccc';
+            previewDiv.style.padding = '10px';
+
+            const previewImage = document.createElement('img');
+            previewImage.src = recipe.image || 'https://via.placeholder.com/150';
+            previewImage.alt = recipe.title;
+            previewImage.style.width = '100%';
+            previewImage.style.height = '100px';
+            previewImage.style.objectFit = 'cover';
+            previewImage.style.borderRadius = '5px 5px 0 0';
+
+            const previewTitle = document.createElement('div');
+            previewTitle.textContent = recipe.title;
+            previewTitle.style.fontWeight = 'bold';
+            previewTitle.style.marginTop = '5px';
+            previewTitle.style.whiteSpace = 'normal';
+            previewTitle.style.wordWrap = 'break-word';
+            previewTitle.style.overflowWrap = 'break-word';
+
+            previewDiv.appendChild(previewImage);
+            previewDiv.appendChild(previewTitle);
+
+            previewDiv.addEventListener('click', () => {
+                openFullRecipe(recipe);
+            });
+
+            recipePreviews.appendChild(previewDiv);
+        });
+    </script>
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js"; import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js"; const firebaseConfig = { apiKey: "AIzaSyBjC8J31ZUn7PoGl6hiQRLLNMnYn-tAl2c",
+        authDomain: "rezepte-f6940.firebaseapp.com", projectId: "rezepte-f6940", storageBucket: "rezepte-f6940.firebasestorage.app", messagingSenderId: "551807386324", appId: "1:551807386324:web:8b4b31a3677e581ad17141", measurementId: "G-NTFP5D70ZD" };
+        const app = initializeApp(firebaseConfig); const analytics = getAnalytics(app);
+    </script>
+
+    <script>
+        const form = document.getElementById('rezeptForm');
+        const rezepteListe = document.getElementById('rezepteListe');
+
+        // Neues Rezept speichern
+        form.addEventListener('submit', async(e) => {
+            e.preventDefault();
+            const titel = document.getElementById('titel').value.trim();
+            const beschreibung = document.getElementById('beschreibung').value.trim();
+
+            if (!titel || !beschreibung) return alert('Bitte alle Felder ausfüllen.');
+
+            try {
+                await db.collection('rezepte').add({
+                    titel: titel,
+                    beschreibung: beschreibung,
+                    erstellt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                form.reset();
+            } catch (error) {
+                alert('Fehler beim Speichern: ' + error.message);
+            }
+        });
+
+        // Rezepte laden und anzeigen
+        db.collection('rezepte').orderBy('erstellt', 'desc').onSnapshot(snapshot => {
+            rezepteListe.innerHTML = ''; // vorher leeren
+            snapshot.forEach(doc => {
+                const rezept = doc.data();
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${rezept.titel}</strong>: ${rezept.beschreibung}`;
+                rezepteListe.appendChild(li);
+            });
+        });
+    </script>
+
+</body>
+
+</html>

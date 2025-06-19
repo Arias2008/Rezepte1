@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rezept hinzufügen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #ccc;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        form label {
+            display: block;
+            font-weight: bold;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        form input[type="text"],
+        form textarea,
+        form input[type="file"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        
+        form textarea {
+            resize: vertical;
+        }
+        
+        button {
+            margin-top: 1.5rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <style>
+        #backButton {
+            background-color: #add8e6;
+            /* light blue */
+            color: black;
+            border-radius: 8px;
+        }
+        
+        #backButton:hover {
+            background-color: #87ceeb;
+            /* sky blue */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Rezept hinzufügen</h1>
+        <form id="recipeForm">
+            <label for="title">Rezeptname:</label>
+            <input type="text" id="title" name="title" required />
+
+
+
+
+
+            <label for="ingredients">Zutaten:</label>
+            <textarea id="ingredients" name="ingredients" rows="4" required></textarea>
+
+            <label for="instructions">Anleitung:</label>
+            <textarea id="instructions" name="instructions" rows="6" required></textarea>
+
+            <label for="image">Bild (PNG oder JPG) hochladen:</label>
+            <input type="file" id="image" name="image" accept="image/png, image/jpeg" />
+
+            <button type="submit">Rezept speichern</button>
+            <button id="backButton" type="button" style="margin-top: 1rem;">Zurück</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('recipeForm');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = form.title.value.trim();
+            const ingredients = form.ingredients.value.trim();
+            const instructions = form.instructions.value.trim();
+            const imageInput = form.image;
+
+            if (!title || !ingredients || !instructions) {
+                alert('Bitte alle Felder ausfüllen.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function() {
+                const imageData = reader.result;
+
+                let recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+
+                // Check for duplicate title
+                if (recipes.some(r => r.title === title)) {
+                    alert('Ein Rezept mit diesem Namen existiert bereits.');
+                    return;
+                }
+
+                recipes.push({
+                    title,
+                    ingredients,
+                    instructions,
+                    image: imageData
+                });
+
+                localStorage.setItem('recipes', JSON.stringify(recipes));
+                alert('Rezept gespeichert!');
+                window.location.href = 'index.html';
+            };
+
+            if (imageInput.files.length > 0) {
+                const file = imageInput.files[0];
+                if (file.size > 100 * 1024) {
+                    alert('Bild darf maximal 100KB groß sein.');
+                    return;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                reader.onload();
+            }
+        });
+    </script>
+    <script>
+        const backButton = document.getElementById('backButton');
+        backButton.addEventListener('click', () => {
+            window.history.back();
+        });
+    </script>
+</body>
+
+</html>

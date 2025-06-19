@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rezept</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background-color: #f9f9f9;
+        }
+        
+        h1 {
+            font-family: 'Arial Black', Arial, sans-serif;
+            color: #333;
+        }
+        
+        .recipe-container {
+            background: #fff;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            box-shadow: 0 0 5px #ccc;
+            max-width: 700px;
+            margin: auto;
+        }
+        
+        .recipe-image {
+            width: 642px;
+            height: 428px;
+            object-fit: cover;
+            border-radius: 5px;
+            display: block;
+            margin-bottom: 1rem;
+        }
+        
+        .recipe-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .recipe-section strong {
+            display: block;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            font-family: monospace;
+            margin: 0;
+            padding-left: 1rem;
+        }
+        
+        pre span.qty {
+            display: inline-block;
+            width: 4ch;
+            color: #555;
+            text-align: right;
+            padding-right: 0.5rem;
+        }
+        
+        pre span.ingredient {
+            color: #4CAF50;
+            font-weight: normal;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        #backButton {
+            margin-top: 1rem;
+            background-color: #add8e6;
+            color: black;
+            border-radius: 8px;
+            padding: 0.7rem 1.2rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        #backButton:hover {
+            background-color: #87ceeb;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="recipe-container">
+        <h1 id="recipe-title" style="white-space: normal; word-wrap: break-word; overflow-wrap: break-word;"></h1>
+        <img id="recipe-image" class="recipe-image" src="" alt="Rezeptbild" />
+        <div class="recipe-section">
+            <strong>Zutaten:</strong>
+            <pre id="recipe-ingredients"></pre>
+        </div>
+        <div class="recipe-section">
+            <strong>Anleitung:</strong>
+            <pre id="recipe-instructions"></pre>
+        </div>
+        <button id="backButton">Zurück</button>
+        <br />
+        <button id="deleteButton" style="margin-top: 1rem; background-color: #f44336; color: white; border: none; border-radius: 8px; padding: 0.7rem 1.2rem; cursor: pointer; font-size: 1rem;">Löschen</button>
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const title = getQueryParam('title');
+        const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+        const recipe = recipes.find(r => r.title === title);
+
+        if (!recipe) {
+            alert('Rezept nicht gefunden.');
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('recipe-title').textContent = recipe.title;
+            document.getElementById('recipe-image').src = recipe.image || 'https://via.placeholder.com/642x428';
+
+            // Format ingredients with quantity and ingredient spans
+            const ingredientsLines = recipe.ingredients.split('\n');
+            const formattedIngredients = ingredientsLines.map(line => {
+                const parts = line.trim().split(/\s+/, 2);
+                if (parts.length === 2) {
+                    return `<span class="qty">${parts[0]}</span><span class="ingredient">${line.substring(parts[0].length).trim()}</span>`;
+                } else {
+                    return `<span class="ingredient">${line}</span>`;
+                }
+            }).join('\n');
+            document.getElementById('recipe-ingredients').innerHTML = formattedIngredients;
+
+            // Instructions as preformatted text with multiple steps
+            const instructionsContainer = document.getElementById('recipe-instructions');
+            const steps = recipe.instructions.split('\n').filter(step => step.trim() !== '');
+            instructionsContainer.innerHTML = '';
+            steps.forEach((step, index) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.style.marginBottom = '0.8rem';
+                stepDiv.innerHTML = `<strong>Schritt ${index + 1}:</strong> <span style="display:inline-block; margin-left: 1rem;">${step.trim()}</span>`;
+                instructionsContainer.appendChild(stepDiv);
+            });
+        }
+
+        document.getElementById('backButton').addEventListener('click', () => {
+            window.history.back();
+        });
+
+        document.getElementById('deleteButton').addEventListener('click', () => {
+            if (confirm('Möchten Sie dieses Rezept wirklich löschen?')) {
+                const updatedRecipes = recipes.filter(r => r.title !== title);
+                localStorage.setItem('recipes', JSON.stringify(updatedRecipes));
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+
+
+
+</body>
+
+</html>
